@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="="UTF-8">
+  <title>CAR-Cytotox Score Calculator | Online Tool</title>
+  <meta name="description" content="Online calculator to compute CAR-Cytotox scores from flow cytometry, RT-qPCR, and multiplex immunoassay data. Developed for immunology and CAR T-cell research.">
+  <meta name="keywords" content="CAR-Cytotox, CAR T cells, cytotoxicity score, immunotherapy, calculator, flow cytometry, RT-qPCR, cytokines">
+  <meta name="author" content="Research Lab">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
+    h1 { color: #333; }
+    label { display: block; margin-top: 10px; }
+    input { margin-left: 10px; }
+    button { margin-top: 20px; padding: 10px; background: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background: #45a049; }
+    .result { margin-top: 20px; font-weight: bold; }
+    footer { margin-top: 40px; font-size: 0.9em; color: #555; }
+  </style>
+</head>
+<body>
+
+  <h1>Hello! Welcome to the CAR-Cytotox Score Calculator</h1>
+  <p>This online calculator allows you to compute CAR-Cytotox scores based on flow cytometry, RT-qPCR, and multiplex immunoassay markers.</p>
+
+  <form id="calculator">
+    <label>CD107a (fold change): <input type="number" step="0.01" id="CD107a"></label>
+    <label>BCL2 (fold change): <input type="number" step="0.01" id="BCL2"></label>
+    <label>GZMB (fold change): <input type="number" step="0.01" id="GZMB"></label>
+    <label>IL-4 (pg/mL): <input type="number" step="0.01" id="IL4"></label>
+    <label>IL-6 (pg/mL): <input type="number" step="0.01" id="IL6"></label>
+    <label>FasL (pg/mL): <input type="number" step="0.01" id="FasL"></label>
+    <label>IFN-γ (pg/mL): <input type="number" step="0.01" id="IFNg"></label>
+    <button type="button" onclick="calculateScore()">Calculate Score</button>
+  </form>
+
+  <div class="result" id="result"></div>
+
+  <footer>
+    <p>About this tool: The CAR-Cytotox score calculator was developed to support research in CAR T-cell therapy and immunology. For research use only.</p>
+  </footer>
+
+<script>
+  // Locked anchors from your dataset
+  const anchors = {
+    "CD107a": 1.95,
+    "BCL2": 3.96,
+    "GZMB": 3.46,
+    "IL4": 1.78,
+    "IL6": 12.48,
+    "FasL": 1.79,
+    "IFNg": 17.27
+  };
+
+  // Example weights (adjust as needed from your scoring rules)
+  const weights = {
+    "CD107a": 2,
+    "BCL2": 1,
+    "GZMB": 2,
+    "IL4": 1,
+    "IL6": 3,
+    "FasL": 1,
+    "IFNg": 3
+  };
+
+  function calculateScore() {
+    let totalWeight = 0;
+    let weightedSum = 0;
+    let missing = false;
+
+    for (let key in anchors) {
+      let input = document.getElementById(key) || document.getElementById(key.replace("γ","g"));
+      let value = parseFloat(input.value);
+      if (!isNaN(value)) {
+        let Nij = (value - 1) / (anchors[key] - 1);
+        if (Nij < 0) Nij = 0;
+        if (Nij > 1) Nij = 1;
+        weightedSum += Nij * weights[key];
+        totalWeight += weights[key];
+      } else {
+        missing = true;
+      }
+    }
+
+    let score = (weightedSum / totalWeight) * 10;
+    let message = "CAR-Cytotox Score: " + score.toFixed(2) + " (0–10 scale).";
+
+    if (missing) {
+      message += " Note: Some values were missing; score rescaled and may be less precise.";
+    }
+
+    document.getElementById("result").innerText = message;
+  }
+</script>
+
+</body>
+</html>
